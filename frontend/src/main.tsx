@@ -8,12 +8,12 @@ import About from './pages/about/index.tsx';
 import AuthProvider from './providers/AuthProvider.tsx';
 
 initializeApp({
-  apiKey: import.meta.env.FIREBASE_APIKEY,
-  authDomain: import.meta.env.FIREBASE_AUTHDOMAIN,
-  projectId: import.meta.env.FIREBASE_PROJECTID,
-  storageBucket: import.meta.env.FIREBASE_STORAGEBUCKET,
-  messagingSenderId: import.meta.env.FIREBASE_MESSAGINGSENDERID,
-  appId: import.meta.env.FIREBASE_APPID,
+  apiKey: import.meta.env.VITE_FIREBASE_APIKEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTHDOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECTID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGEBUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGINGSENDERID,
+  appId: import.meta.env.VITE_FIREBASE_APPID,
 });
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
