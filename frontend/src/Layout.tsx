@@ -1,6 +1,13 @@
-import { Link, Outlet } from 'react-router-dom';
+import { NavLink, Outlet } from 'react-router-dom';
+import { useAuth } from './hooks/useAuth';
 
 export default function Layout() {
+  const { isLogged, data, loading, logout, login } = useAuth();
+
+  if (loading) {
+    return <div></div>;
+  }
+
   return (
     <>
       <nav className="navbar navbar-expand-lg bg-body-tertiary">
@@ -20,14 +27,49 @@ export default function Layout() {
           <div className="collapse navbar-collapse" id="navbarNav">
             <ul className="navbar-nav me-auto mb-2 mb-lg-0">
               <li className="nav-item">
-                <Link className="nav-link active" aria-current="page" to="/">
+                <NavLink
+                  className={({ isActive }) =>
+                    isActive ? 'nav-link active' : 'nav-link'
+                  }
+                  aria-current="page"
+                  to="/"
+                >
                   Home
-                </Link>
+                </NavLink>
+              </li>
+              <li className="nav-item">
+                <NavLink
+                  className={({ isActive }) =>
+                    isActive ? 'nav-link active' : 'nav-link'
+                  }
+                  aria-current="page"
+                  to="/about"
+                >
+                  About
+                </NavLink>
               </li>
             </ul>
-            <span className="navbar-text">
-              Navbar text with an inline element
-            </span>
+            {isLogged && (
+              <>
+                <span className="navbar-text mx-1">{data?.user.email}</span>
+                <button
+                  className="btn btn-outline-secondary"
+                  type="button"
+                  onClick={logout}
+                >
+                  Logout
+                </button>
+              </>
+            )}
+            {!isLogged && (
+              <button
+                className="btn btn-outline-success"
+                type="button"
+                onClick={login}
+              >
+                Login
+              </button>
+            )}
           </div>
         </div>
       </nav>
