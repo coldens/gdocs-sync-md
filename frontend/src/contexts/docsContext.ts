@@ -14,6 +14,9 @@ export type Credentials = {
 };
 
 export type DocsContext = {
+  /**
+   * Set the credentials in the local storage
+   */
   setCredentials: (credentials: Credentials) => void;
   credentials?: Credentials;
 };

@@ -9,9 +9,10 @@ export default function Authorized() {
     const tokens = url.searchParams.get('tokens');
     if (tokens) {
       context.setCredentials(JSON.parse(tokens));
-      window.postMessage('authorized', '*');
     }
-  });
+
+    window.close();
+  }, [context]);
 
   return <div>Authorized</div>;
 }

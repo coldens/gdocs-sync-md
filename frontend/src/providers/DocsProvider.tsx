@@ -13,10 +13,19 @@ export default function DocsProvider({
   };
 
   useEffect(() => {
-    const credentials = localStorage.getItem('credentials');
-    if (credentials) {
-      setTokens(JSON.parse(credentials) as Credentials);
-    }
+    const handler = () => {
+      const credentials = localStorage.getItem('credentials');
+      if (credentials) {
+        setTokens(JSON.parse(credentials) as Credentials);
+      }
+    };
+
+    handler();
+
+    window.addEventListener('storage', handler);
+    return () => {
+      window.removeEventListener('storage', handler);
+    };
   }, []);
 
   return (
