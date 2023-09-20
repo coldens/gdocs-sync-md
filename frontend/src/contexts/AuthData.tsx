@@ -1,10 +1,9 @@
+import { User } from 'firebase/auth';
+
 export type AuthData = {
-  refreshToken: string;
-  user: {
-    displayName: string;
-    email: string;
-    photoURL: string;
-    uid: string;
+  user: User & {
+    accessToken?: string;
+    refreshToken?: string;
   };
 };
 

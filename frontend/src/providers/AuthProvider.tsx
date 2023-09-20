@@ -4,25 +4,11 @@ import {
   onAuthStateChanged,
   signInWithPopup,
 } from 'firebase/auth';
-import { FC, ReactNode, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useEffect, useMemo, useState } from 'react';
 import { AuthData } from '../contexts/AuthData';
 import { authContext } from '../contexts/authContext';
 
-const logout = async () => {
-  const auth = getAuth();
-  await auth.signOut();
-};
-
-const login = async () => {
-  try {
-    const result = await signInWithPopup(getAuth(), new GoogleAuthProvider());
-    GoogleAuthProvider.credentialFromResult(result);
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
+export default function AuthProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<AuthData | undefined>(undefined);
   const [loading, setLoading] = useState(true);
 
@@ -33,15 +19,7 @@ const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
       auth,
       (user) => {
         if (user) {
-          setData({
-            refreshToken: user.refreshToken,
-            user: {
-              displayName: user.displayName || '',
-              email: user.email || '',
-              photoURL: user.photoURL || '',
-              uid: user.uid,
-            },
-          });
+          setData({ user });
         } else {
           setData(undefined);
         }
@@ -54,6 +32,23 @@ const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
     );
   }, []);
 
+  const login = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      provider.addScope('https://www.googleapis.com/auth/documents.readonly');
+      const result = await signInWithPopup(getAuth(), provider);
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      console.log(credential);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const logout = async () => {
+    const auth = getAuth();
+    await auth.signOut();
+  };
+
   const isLogged = useMemo(() => !!data, [data]);
 
   return (
@@ -61,6 +56,4 @@ const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
       {children}
     </authContext.Provider>
   );
-};
-
-export default AuthProvider;
+}
