@@ -3,7 +3,7 @@ export default function AllowDocs() {
     event.preventDefault();
 
     const authWindow = window.open(
-      'http://127.0.0.1:5001/gdoc-md-sync-391822/us-central1/gdocs/auth',
+      import.meta.env.VITE_AUTHORIZE_URL,
       'authorize',
       'popup=yes',
     );
