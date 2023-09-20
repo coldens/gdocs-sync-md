@@ -18,10 +18,10 @@ const oauth2Client = new google.auth.OAuth2(
 
 export const gdocs = onRequest(app);
 
-app.get('/', async (req, res) => {
+app.post('/upload', async (req, res) => {
   const token = await db
     .collection('tokens')
-    .doc(req.query.id_token as string)
+    .doc(req.body.id_token as string)
     .get();
 
   oauth2Client.setCredentials(token.data() as any);
@@ -32,9 +32,7 @@ app.get('/', async (req, res) => {
   });
 
   const doc = await client.documents.get({
-    documentId:
-      (req.query.documentId as string) ||
-      '1DUW8v-WYHYGhoinD4zdMW0zpfhLrTmHVGXJNP1ZlM8g',
+    documentId: req.body.documentId as string,
   });
 
   // doc to markdown
@@ -65,7 +63,12 @@ app.get('/auth/handler', async (req, res) => {
 
   if (profile.data.id) {
     await db.collection('tokens').doc(profile.data.id).set(tokens);
-  }
+    const url = new URL(process.env.FRONTEND_AUTH_URL as string);
 
-  res.send({ profile: profile.data });
+    url.searchParams.set('tokens', JSON.stringify(tokens));
+
+    res.redirect(url.toString());
+  } else {
+    res.send('Error');
+  }
 });

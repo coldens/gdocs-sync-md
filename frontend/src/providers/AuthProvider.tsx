@@ -35,10 +35,8 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   const login = async () => {
     try {
       const provider = new GoogleAuthProvider();
-      provider.addScope('https://www.googleapis.com/auth/documents.readonly');
       const result = await signInWithPopup(getAuth(), provider);
-      const credential = GoogleAuthProvider.credentialFromResult(result);
-      console.log(credential);
+      GoogleAuthProvider.credentialFromResult(result);
     } catch (error) {
       console.error(error);
     }

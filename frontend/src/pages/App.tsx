@@ -3,24 +3,26 @@ import {
   getFunctions,
   httpsCallable,
 } from 'firebase/functions';
+import AddDocumentForm from '../components/AddDocumentForm';
+import AllowDocs from '../components/AllowDocs';
+import { useDocs } from '../hooks/useDocs';
 
 function App() {
   const functions = getFunctions();
   connectFunctionsEmulator(functions, '127.0.0.1', 5001);
 
-  const getDocs = httpsCallable(functions, 'getDocs');
+  const { credentials } = useDocs();
+  httpsCallable(functions, 'getDocs');
 
-  getDocs()
-    .then((result) => {
-      console.log(result);
-    })
-    .catch((error) => {
-      console.error(error);
-    });
+  const onSubmit: React.FormEventHandler = (event) => {
+    event.preventDefault();
+  };
 
   return (
-    <div>
+    <div className="row">
       <h1>Hello to Gdoc sync!</h1>
+
+      {credentials ? <AddDocumentForm {...{ onSubmit }} /> : <AllowDocs />}
     </div>
   );
 }
