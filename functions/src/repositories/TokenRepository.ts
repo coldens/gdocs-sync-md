@@ -7,7 +7,7 @@ import { getFirestore } from 'firebase-admin/firestore';
  * after the user authorizes the app to access their profile and documents.
  */
 export default class TokenRepository {
-  collection: FirebaseFirestore.CollectionReference;
+  private readonly collection: FirebaseFirestore.CollectionReference;
 
   constructor(private readonly firestore = getFirestore()) {
     this.collection = this.firestore.collection('tokens');
