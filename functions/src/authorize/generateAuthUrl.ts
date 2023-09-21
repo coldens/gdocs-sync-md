@@ -1,5 +1,11 @@
 import { getOAuth2client } from './getOAuth2client';
 
+/**
+ * Generates an url to the consent page that asks for permissions to access
+ * the user's profile and documents, and returns the url with the state
+ * parameter containing the user's email to be used later to save the tokens
+ * in firestore.
+ */
 export function generateAuthUrl(query: { email: string }) {
   const oauth2Client = getOAuth2client();
 

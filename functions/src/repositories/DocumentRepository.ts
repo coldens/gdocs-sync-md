@@ -1,5 +1,11 @@
 import { getFirestore } from 'firebase-admin/firestore';
 
+/**
+ * Repository to save and get documents from firestore
+ *
+ * This is the repository that will be used to save the documents in firestore
+ * after the user authorizes the app to access their profile and documents.
+ */
 export default class DocumentRepository {
   private collection: FirebaseFirestore.CollectionReference;
 
