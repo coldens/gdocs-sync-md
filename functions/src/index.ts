@@ -2,7 +2,8 @@ import { initializeApp } from 'firebase-admin/app';
 import * as logger from 'firebase-functions/logger';
 import { onCall, onRequest } from 'firebase-functions/v2/https';
 
-// Initialize Firebase Admin before importing anything else
+// Initialize Firebase Admin before importing anything else because it
+// allows us to use the Firebase Admin SDK in the imported files.
 initializeApp();
 
 import { generateAuthUrl } from './authorize/generateAuthUrl';
@@ -11,7 +12,7 @@ import { saveDocument } from './documents/saveDocument';
 import { authHandlerSchema } from './schemas/authHandlerSchema';
 import { authSchema } from './schemas/authSchema';
 import { uploadSchema } from './schemas/uploadSchema';
-import { getDocuments } from './documents/getDocuments';
+import { getDocumentIds } from './documents/getDocumentIds';
 
 /**
  * Uploads a Google Doc to Firestore, converting it to Markdown.
@@ -32,6 +33,9 @@ export const upload = onCall(async (request) => {
   }
 });
 
+/**
+ * Returns an array of ids of the current User.
+ */
 export const load = onCall(async (request) => {
   try {
     if (!request.auth) {
@@ -39,7 +43,7 @@ export const load = onCall(async (request) => {
     }
 
     const email = request.auth.token.email!;
-    const result = await getDocuments(email);
+    const result = await getDocumentIds(email);
 
     return result;
   } catch (err) {

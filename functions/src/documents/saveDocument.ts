@@ -5,6 +5,9 @@ import DocumentRepository from '../repositories/DocumentRepository';
 
 const repository = new DocumentRepository();
 
+/**
+ * Saves a Google Docs document as a markdown file in firestore
+ */
 export async function saveDocument(email: string, documentId: string) {
   const oauth2Client = await getOAuthToken(email);
 

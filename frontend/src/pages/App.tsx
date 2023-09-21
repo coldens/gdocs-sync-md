@@ -4,7 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useDocs } from '../hooks/useDocs';
 
 function App() {
-  const { credentials } = useDocs();
+  const { isAuthorized } = useDocs();
   const auth = useAuth();
 
   return (
@@ -12,7 +12,7 @@ function App() {
       <h1>Hello to Gdoc sync!</h1>
 
       {auth.isLogged ? (
-        <>{credentials ? <AddDocumentForm /> : <AllowDocs />}</>
+        <>{isAuthorized ? <AddDocumentForm /> : <AllowDocs />}</>
       ) : (
         <>
           <p>You need to login to use this app</p>

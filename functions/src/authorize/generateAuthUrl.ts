@@ -11,7 +11,7 @@ export function generateAuthUrl(query: { email: string }) {
     // If you only need one scope you can pass it as a string
     scope: [
       'profile',
-      'https://www.googleapis.com/auth/documents',
+      'https://www.googleapis.com/auth/documents.readonly',
       'https://www.googleapis.com/auth/userinfo.email',
     ],
 

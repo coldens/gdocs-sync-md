@@ -1,24 +1,38 @@
 import { useEffect, useState } from 'react';
-import { Credentials, docsContext } from '../contexts/docsContext';
+import { docsContext } from '../contexts/docsContext';
+import {
+  connectFunctionsEmulator,
+  getFunctions,
+  httpsCallable,
+} from 'firebase/functions';
+import { useAuth } from '../hooks/useAuth';
 
 export default function DocsProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [tokens, setTokens] = useState<Credentials | undefined>(undefined); // [1
+  const [documentIds, setDocumentIds] = useState<string[]>([]);
+  const [isAuthorized, setIsAuthorized] = useState<boolean>(false);
+  const { isLogged } = useAuth();
 
-  const setCredentials = (credentials: Credentials) => {
-    localStorage.setItem('credentials', JSON.stringify(credentials));
-  };
-
+  // Load the documentIds from firebase
   useEffect(() => {
+    const functions = getFunctions();
+    if (import.meta.env.DEV) {
+      connectFunctionsEmulator(functions, 'localhost', 5001);
+    }
+    const load = httpsCallable(functions, 'load');
     const handler = () => {
-      const credentials = localStorage.getItem('credentials');
-      if (credentials) {
-        setTokens(JSON.parse(credentials) as Credentials);
-      } else {
-        setTokens(undefined);
+      if (isLogged) {
+        load()
+          .then((result) => {
+            setDocumentIds(result.data as string[]);
+            setIsAuthorized(true);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
       }
     };
 
@@ -28,10 +42,10 @@ export default function DocsProvider({
     return () => {
       window.removeEventListener('storage', handler);
     };
-  }, []);
+  }, [isLogged]);
 
   return (
-    <docsContext.Provider value={{ setCredentials, credentials: tokens }}>
+    <docsContext.Provider value={{ documentIds, isAuthorized }}>
       {children}
     </docsContext.Provider>
   );
