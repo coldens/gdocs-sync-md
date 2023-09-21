@@ -1,6 +1,6 @@
 {
   "name": "functions",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "scripts": {
     "build": "rimraf lib && tsc",
     "build:watch": "tsc --watch",
@@ -18,15 +18,18 @@
     "@google-cloud/functions-framework": "^3.3.0",
     "@google-cloud/local-auth": "^3.0.0",
     "@googleapis/docs": "^2.0.5",
+    "@googleapis/drive": "^8.3.1",
     "docs-markdown": "^1.2.0",
     "dotenv": "^16.3.1",
     "firebase-admin": "^11.8.0",
     "firebase-functions": "^4.3.1",
     "googleapis": "^126.0.1",
     "rimraf": "^5.0.1",
+    "turndown": "^7.1.2",
     "yup": "^1.2.0"
   },
   "devDependencies": {
+    "@types/turndown": "^5.0.2",
     "@typescript-eslint/eslint-plugin": "^6.7.0",
     "@typescript-eslint/parser": "^6.7.0",
     "eslint": "^8.49.0",

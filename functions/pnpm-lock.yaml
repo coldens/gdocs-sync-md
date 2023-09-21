@@ -14,6 +14,9 @@ dependencies:
   '@googleapis/docs':
     specifier: ^2.0.5
     version: 2.0.5
+  '@googleapis/drive':
+    specifier: ^8.3.1
+    version: 8.3.1
   docs-markdown:
     specifier: ^1.2.0
     version: 1.2.0
@@ -32,11 +35,17 @@ dependencies:
   rimraf:
     specifier: ^5.0.1
     version: 5.0.1
+  turndown:
+    specifier: ^7.1.2
+    version: 7.1.2
   yup:
     specifier: ^1.2.0
     version: 1.2.0
 
 devDependencies:
+  '@types/turndown':
+    specifier: ^5.0.2
+    version: 5.0.2
   '@typescript-eslint/eslint-plugin':
     specifier: ^6.7.0
     version: 6.7.0(@typescript-eslint/parser@6.7.0)(eslint@8.49.0)(typescript@5.2.2)
@@ -587,6 +596,16 @@ packages:
 
   /@googleapis/docs@2.0.5:
     resolution: {integrity: sha512-bkssiuHhrYPo0ZC3ntRDHdR+ma16mPFQ6kG8KFGUM60l8dyTZa424EVwltBWahgrCAL+1LdQa2nghEmyNgc0Bw==}
+    engines: {node: '>=12.0.0'}
+    dependencies:
+      googleapis-common: 7.0.0
+    transitivePeerDependencies:
+      - encoding
+      - supports-color
+    dev: false
+
+  /@googleapis/drive@8.3.1:
+    resolution: {integrity: sha512-6uh7cC6nzulB5Q76a4OmWF54pfFmDSy6IdF95DKF8yVJVaO6/CfyRtJJsAKmXOZkXIEs9sZZeSzBd4eXwJMlag==}
     engines: {node: '>=12.0.0'}
     dependencies:
       googleapis-common: 7.0.0
@@ -1199,6 +1218,10 @@ packages:
 
   /@types/stack-utils@2.0.1:
     resolution: {integrity: sha512-Hl219/BT5fLAaz6NDkSuhzasy49dwQS/DSdu4MdggFB8zcXv7vflBI3xp7FEmkmdDkBUI2bPUNeMttp2knYdxw==}
+    dev: true
+
+  /@types/turndown@5.0.2:
+    resolution: {integrity: sha512-ghbjIyvMSQn/UGEuQJD6C4DfbokyYqGRhNAetWH02qnuRfvRZz9qTOG9e0RPkVqGsjv+YsjF3gRp7yFKvc/1PA==}
     dev: true
 
   /@types/yargs-parser@21.0.0:
@@ -1962,6 +1985,10 @@ packages:
     dependencies:
       esutils: 2.0.3
     dev: true
+
+  /domino@2.1.6:
+    resolution: {integrity: sha512-3VdM/SXBZX2omc9JF9nOPCtDaYQ67BGp5CoLpIQlO2KCAPETs8TcDHacF26jXadGbvUteZzRTeos2fhID5+ucQ==}
+    dev: false
 
   /dotenv@16.3.1:
     resolution: {integrity: sha512-IPzF4w4/Rd94bA9imS68tZBaYyBWSCE47V1RGuMrB94iyTOIEwRmVL2x/4An+6mETpLrKJ5hQkB8W4kFAadeIQ==}
@@ -4926,6 +4953,12 @@ packages:
 
   /tslib@2.6.2:
     resolution: {integrity: sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==}
+
+  /turndown@7.1.2:
+    resolution: {integrity: sha512-ntI9R7fcUKjqBP6QU8rBK2Ehyt8LAzt3UBT9JR9tgo6GtuKvyUzpayWmeMKJw1DPdXzktvtIT8m2mVXz+bL/Qg==}
+    dependencies:
+      domino: 2.1.6
+    dev: false
 
   /type-check@0.3.2:
     resolution: {integrity: sha512-ZCmOJdvOWDBYJlzAoFkC+Q0+bUyEOS1ltgp1MGU03fqHG+dbi9tBFU2Rd9QKiDZFAYrhPh2JUf7rZRIuHRKtOg==}

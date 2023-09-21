@@ -19,6 +19,7 @@ export function generateAuthUrl(query: { email: string }) {
       'profile',
       'https://www.googleapis.com/auth/documents.readonly',
       'https://www.googleapis.com/auth/userinfo.email',
+      'https://www.googleapis.com/auth/drive.readonly',
     ],
 
     state: JSON.stringify({ email: query.email }),

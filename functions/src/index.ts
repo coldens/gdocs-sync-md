@@ -13,6 +13,7 @@ import { authHandlerSchema } from './schemas/authHandlerSchema';
 import { authSchema } from './schemas/authSchema';
 import { uploadSchema } from './schemas/uploadSchema';
 import { getDocumentIds } from './documents/getDocumentIds';
+import { isAuthorized } from './authorize/isAuthorized';
 
 /**
  * Uploads a Google Doc to Firestore, converting it to Markdown.
@@ -20,7 +21,7 @@ import { getDocumentIds } from './documents/getDocumentIds';
 export const upload = onCall(async (request) => {
   try {
     if (!request.auth) {
-      throw new Error('Unauthorized');
+      throw new Error('You must be logged in to upload a document');
     }
 
     const { documentId } = await uploadSchema.validate(request.data);
@@ -39,10 +40,16 @@ export const upload = onCall(async (request) => {
 export const load = onCall(async (request) => {
   try {
     if (!request.auth) {
-      throw new Error('Unauthorized');
+      throw new Error('You must be logged in to load documents');
     }
 
     const email = request.auth.token.email!;
+    const authorized = await isAuthorized(email);
+
+    if (!authorized) {
+      throw new Error('Unauthorized');
+    }
+
     const result = await getDocumentIds(email);
 
     return result;
