@@ -34,7 +34,7 @@ export const upload = onCall(async (request) => {
 });
 
 /**
- * Returns an array of ids of the current User.
+ * Returns an array of document ids of the current User.
  */
 export const load = onCall(async (request) => {
   try {

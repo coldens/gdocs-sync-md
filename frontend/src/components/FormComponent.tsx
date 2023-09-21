@@ -4,6 +4,7 @@ import {
   httpsCallable,
 } from 'firebase/functions';
 import { useState } from 'react';
+import { eventBus } from '../eventBus';
 
 export default function FormComponent({ defaultDocumentId = '' }) {
   const [uploading, setUploading] = useState(false);
@@ -41,6 +42,9 @@ export default function FormComponent({ defaultDocumentId = '' }) {
         if (defaultDocumentId === '') {
           setDocumentId('');
         }
+
+        // Refresh the documentIds
+        eventBus.emit('refresh-docs');
       });
   };
   return (

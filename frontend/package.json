@@ -1,7 +1,7 @@
 {
   "name": "frontend",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,9 +9,10 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint . --ext ts,tsx --fix",
     "preview": "vite preview",
-    "deploy": "firebase deploy --only hosting"
+    "deploy": "npm run build && firebase deploy --only hosting"
   },
   "dependencies": {
+    "eventemitter2": "^6.4.9",
     "firebase": "^10.4.0",
     "localforage": "^1.10.0",
     "match-sorter": "^6.3.1",

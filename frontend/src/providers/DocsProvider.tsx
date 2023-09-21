@@ -6,6 +6,7 @@ import {
   httpsCallable,
 } from 'firebase/functions';
 import { useAuth } from '../hooks/useAuth';
+import { eventBus } from '../eventBus';
 
 export default function DocsProvider({
   children,
@@ -14,6 +15,7 @@ export default function DocsProvider({
 }) {
   const [documentIds, setDocumentIds] = useState<string[]>([]);
   const [isAuthorized, setIsAuthorized] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const { isLogged } = useAuth();
 
   // Load the documentIds from firebase
@@ -25,6 +27,8 @@ export default function DocsProvider({
     const load = httpsCallable(functions, 'load');
     const handler = () => {
       if (isLogged) {
+        setIsLoading(true);
+
         load()
           .then((result) => {
             setDocumentIds(result.data as string[]);
@@ -32,20 +36,28 @@ export default function DocsProvider({
           })
           .catch((error) => {
             console.log(error);
+          })
+          .finally(() => {
+            setIsLoading(false);
           });
+      } else {
+        setIsAuthorized(false);
+        setIsLoading(false);
       }
     };
 
     handler();
 
     window.addEventListener('storage', handler);
+    eventBus.addListener('refresh-docs', () => handler());
     return () => {
       window.removeEventListener('storage', handler);
+      eventBus.removeAllListeners('refresh-docs');
     };
   }, [isLogged]);
 
   return (
-    <docsContext.Provider value={{ documentIds, isAuthorized }}>
+    <docsContext.Provider value={{ documentIds, isAuthorized, isLoading }}>
       {children}
     </docsContext.Provider>
   );
