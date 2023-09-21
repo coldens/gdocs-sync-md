@@ -35,6 +35,8 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   const login = async () => {
     try {
       const provider = new GoogleAuthProvider();
+      provider.addScope('profile');
+      provider.addScope('https://www.googleapis.com/auth/userinfo.email');
       const result = await signInWithPopup(getAuth(), provider);
       GoogleAuthProvider.credentialFromResult(result);
     } catch (error) {
@@ -45,6 +47,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     const auth = getAuth();
     await auth.signOut();
+    localStorage.clear();
   };
 
   const isLogged = useMemo(() => !!data, [data]);

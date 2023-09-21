@@ -17,6 +17,8 @@ export default function DocsProvider({
       const credentials = localStorage.getItem('credentials');
       if (credentials) {
         setTokens(JSON.parse(credentials) as Credentials);
+      } else {
+        setTokens(undefined);
       }
     };
 

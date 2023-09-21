@@ -1,7 +1,17 @@
+import { useAuth } from '../hooks/useAuth';
+
 export default function AllowDocs() {
+  const { data } = useAuth();
+
+  if (!data) {
+    return null;
+  }
+
   const onClick: React.MouseEventHandler = (event) => {
     event.preventDefault();
-    window.open(import.meta.env.VITE_AUTHORIZE_URL, 'authorize', 'popup=yes');
+    const url = new URL(import.meta.env.VITE_AUTHORIZE_URL);
+    url.searchParams.set('email', data?.user.email || '');
+    window.open(url.toString(), 'authorize', 'popup=yes');
   };
 
   return (

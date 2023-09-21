@@ -8,7 +8,8 @@
     "strict": true,
     "target": "ES2022",
     "removeComments": true,
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "useUnknownInCatchVariables": false
   },
   "compileOnSave": true,
   "include": [
