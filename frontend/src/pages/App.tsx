@@ -7,18 +7,12 @@ function App() {
   const { credentials } = useDocs();
   const auth = useAuth();
 
-  const onSubmit: React.FormEventHandler = (event) => {
-    event.preventDefault();
-  };
-
   return (
     <div className="row">
       <h1>Hello to Gdoc sync!</h1>
 
       {auth.isLogged ? (
-        <>
-          {credentials ? <AddDocumentForm {...{ onSubmit }} /> : <AllowDocs />}
-        </>
+        <>{credentials ? <AddDocumentForm /> : <AllowDocs />}</>
       ) : (
         <>
           <p>You need to login to use this app</p>

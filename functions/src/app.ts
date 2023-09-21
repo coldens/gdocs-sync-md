@@ -1,6 +1,5 @@
 import { google } from 'googleapis';
 import express = require('express');
-import { docs } from '@googleapis/docs';
 import { getFirestore } from 'firebase-admin/firestore';
 import { initializeApp } from 'firebase-admin/app';
 import { authSchema } from './schemas/authSchema';
@@ -9,36 +8,13 @@ import * as logger from 'firebase-functions/logger';
 initializeApp();
 
 export const app = express();
-const db = getFirestore();
+export const firestore = getFirestore();
 
-const oauth2Client = new google.auth.OAuth2(
+export const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
   process.env.GOOGLE_CALLBACK_URL,
 );
-
-app.post('/upload', async (req, res) => {
-  const token = await db
-    .collection('tokens')
-    .doc(req.body.email as string)
-    .get();
-
-  oauth2Client.setCredentials(token.data() as any);
-
-  const client = docs({
-    version: 'v1',
-    auth: oauth2Client,
-  });
-
-  const doc = await client.documents.get({
-    documentId: req.body.documentId as string,
-  });
-
-  // doc to markdown
-  const markdown = doc.data.body?.content;
-  // TODO: guardar en firestore
-  res.send(markdown);
-});
 
 app.get('/auth', async (req, res) => {
   let query: { email: string };
@@ -87,7 +63,7 @@ app.get('/auth/handler', async (req, res) => {
 
   try {
     // Save tokens and profile of the authorized user in firestore
-    await db.collection('tokens').doc(email).set(
+    await firestore.collection('tokens').doc(email).set(
       { profile: profile.data, tokens },
       {
         merge: true,
