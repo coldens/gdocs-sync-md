@@ -18,27 +18,32 @@ import { uploadSchema } from './schemas/uploadSchema';
 /**
  * Uploads a Google Doc to Firestore, converting it to Markdown.
  */
-export const upload = onCall(async (request) => {
-  try {
-    if (!request.auth) {
-      throw new Error('You must be logged in to upload a document');
+export const upload = onCall(
+  {
+    memory: '512MiB',
+  },
+  async (request) => {
+    try {
+      if (!request.auth) {
+        throw new Error('You must be logged in to upload a document');
+      }
+
+      const userId = request.auth.uid;
+      const authorized = await isAuthorized(userId);
+
+      if (!authorized) {
+        throw new Error('Unauthorized');
+      }
+
+      const { documentId } = await uploadSchema.validate(request.data);
+
+      return saveDocument(userId, documentId);
+    } catch (err) {
+      logger.error('Error uploading document', err);
+      throw err;
     }
-
-    const userId = request.auth.uid;
-    const authorized = await isAuthorized(userId);
-
-    if (!authorized) {
-      throw new Error('Unauthorized');
-    }
-
-    const { documentId } = await uploadSchema.validate(request.data);
-
-    return saveDocument(userId, documentId);
-  } catch (err) {
-    logger.error('Error uploading document', err);
-    throw err;
-  }
-});
+  },
+);
 
 /**
  * Returns an array of document ids of the current User.
