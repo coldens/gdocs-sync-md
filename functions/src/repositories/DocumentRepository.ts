@@ -47,7 +47,4 @@ export default class DocumentRepository {
 type Document = {
   id: string;
   markdown: string;
-  html: string;
-  htmlMarkdown: string;
-  title: string;
 };

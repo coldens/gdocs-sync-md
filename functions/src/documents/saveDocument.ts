@@ -2,12 +2,10 @@ import { docs } from '@googleapis/docs';
 import { drive } from '@googleapis/drive';
 import * as logger from 'firebase-functions/logger';
 import { getOAuthToken } from '../authorize/getOAuthToken';
+import { convertToMarkdown } from '../pandoc';
 import DocumentRepository from '../repositories/DocumentRepository';
-import TurndownService = require('turndown');
-import { googleDocsToMarkdown } from 'docs-markdown';
 
 const repository = new DocumentRepository();
-const turndownService = new TurndownService();
 
 /**
  * Saves a Google Docs document as a markdown file in firestore
@@ -27,30 +25,25 @@ export async function saveDocument(userId: string, documentId: string) {
     auth: oauth2Client,
   });
 
-  const [doc, htmlDoc] = await Promise.all([
+  const [doc, file] = await Promise.all([
     // Get the document metadata
     docsClient.documents.get({
       documentId,
     }),
-    // Get the document as HTML
+    // Get the document content
     driveClient.files.export({
       fileId: documentId,
-      mimeType: 'text/html',
+      mimeType: 'application/rtf',
     }),
   ]);
 
-  if (htmlDoc.data && doc.data) {
+  if (doc.data && file.data) {
     logger.info(`Saving document "${documentId}" for user "${userId}"`);
-    const html = htmlDoc.data as string;
-
+    const content = await (file.data as Blob).text();
     const document = {
       id: documentId,
-      markdown: googleDocsToMarkdown(doc.data),
+      markdown: await convertToMarkdown(content),
       title: doc.data.title || 'Document without title',
-
-      // TODO: For testing purposes, we're saving the HTML as markdown as well
-      html: html,
-      htmlMarkdown: turndownService.turndown(html),
     };
 
     await repository.save(userId, document);
