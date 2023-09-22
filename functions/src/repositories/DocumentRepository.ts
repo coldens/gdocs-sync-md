@@ -13,9 +13,9 @@ export default class DocumentRepository {
     this.collection = this.firestore.collection('documents');
   }
 
-  async save(email: string, data: Document) {
+  async save(userId: string, data: Document) {
     await this.collection
-      .doc(email)
+      .doc(userId)
       .collection('documents')
       .doc(data.id)
       .set(data, {
@@ -23,9 +23,9 @@ export default class DocumentRepository {
       });
   }
 
-  async get(email: string, id: string): Promise<Document | undefined> {
+  async get(userId: string, id: string): Promise<Document | undefined> {
     const document = await this.collection
-      .doc(email)
+      .doc(userId)
       .collection('documents')
       .doc(id)
       .get();
@@ -33,9 +33,9 @@ export default class DocumentRepository {
     return document.data() as Document;
   }
 
-  async getAllIds(email: string): Promise<string[]> {
+  async getAllIds(userId: string): Promise<string[]> {
     const documents = await this.collection
-      .doc(email)
+      .doc(userId)
       .collection('documents')
       .select('id')
       .get();

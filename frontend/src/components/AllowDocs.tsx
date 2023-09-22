@@ -10,7 +10,7 @@ export default function AllowDocs() {
   const onClick: React.MouseEventHandler = (event) => {
     event.preventDefault();
     const url = new URL(import.meta.env.VITE_AUTHORIZE_URL);
-    url.searchParams.set('email', data?.user.email || '');
+    url.searchParams.set('userId', data.user.uid);
     window.open(url.toString(), 'authorize', 'popup=yes');
   };
 

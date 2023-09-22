@@ -7,13 +7,13 @@ import { onCall, onRequest } from 'firebase-functions/v2/https';
 initializeApp();
 
 import { generateAuthUrl } from './authorize/generateAuthUrl';
-import { generateAuthorizedUrl } from './authorize/generateAuthorizedUrl';
+import { isAuthorized } from './authorize/isAuthorized';
+import { saveRefreshToken } from './authorize/saveRefreshToken';
+import { getDocumentIds } from './documents/getDocumentIds';
 import { saveDocument } from './documents/saveDocument';
 import { authHandlerSchema } from './schemas/authHandlerSchema';
 import { authSchema } from './schemas/authSchema';
 import { uploadSchema } from './schemas/uploadSchema';
-import { getDocumentIds } from './documents/getDocumentIds';
-import { isAuthorized } from './authorize/isAuthorized';
 
 /**
  * Uploads a Google Doc to Firestore, converting it to Markdown.
@@ -24,10 +24,16 @@ export const upload = onCall(async (request) => {
       throw new Error('You must be logged in to upload a document');
     }
 
-    const { documentId } = await uploadSchema.validate(request.data);
-    const email = request.auth.token.email!;
+    const userId = request.auth.uid;
+    const authorized = await isAuthorized(userId);
 
-    return saveDocument(email, documentId);
+    if (!authorized) {
+      throw new Error('Unauthorized');
+    }
+
+    const { documentId } = await uploadSchema.validate(request.data);
+
+    return saveDocument(userId, documentId);
   } catch (err) {
     logger.error('Error uploading document', err);
     throw err;
@@ -43,14 +49,14 @@ export const load = onCall(async (request) => {
       throw new Error('You must be logged in to load documents');
     }
 
-    const email = request.auth.token.email!;
-    const authorized = await isAuthorized(email);
+    const userId = request.auth.uid;
+    const authorized = await isAuthorized(userId);
 
     if (!authorized) {
       throw new Error('Unauthorized');
     }
 
-    const result = await getDocumentIds(email);
+    const result = await getDocumentIds(userId);
 
     return result;
   } catch (err) {
@@ -63,7 +69,7 @@ export const load = onCall(async (request) => {
  * To be called by the frontend to get the url to redirect to for Google OAuth 2.0.
  */
 export const authorize = onRequest(async (req, res) => {
-  let query: { email: string };
+  let query: { userId: string };
 
   try {
     query = await authSchema.validate(req.query);
@@ -83,19 +89,25 @@ export const authorize = onRequest(async (req, res) => {
 
 /**
  * Exchanges a given Google OAuth 2.0 authorization code for tokens
- * and redirects the user to the frontend with the tokens in the query.
+ * and redirects the user to the frontend.
  */
 export const authorizeHandler = onRequest(async (req, res) => {
   const query = await authHandlerSchema.validate(req.query).catch((error) => {
     logger.error('Error validating auth handler query', error);
+
     if (error.errors) {
       res.status(400).send(error.errors);
     }
   });
 
   if (query) {
-    // Redirect to frontend with tokens in query
-    const url = await generateAuthorizedUrl(query.code, query.state);
+    const url = new URL(process.env.FRONTEND_AUTH_URL!);
+
+    try {
+      await saveRefreshToken(query.code, query.state);
+    } catch (error) {
+      url.searchParams.set('error', 'Error saving tokens');
+    }
 
     logger.info('Redirecting to:', url.toString());
     res.redirect(url.toString());

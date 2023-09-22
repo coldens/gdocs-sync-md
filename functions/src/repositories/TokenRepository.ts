@@ -13,8 +13,8 @@ export default class TokenRepository {
     this.collection = this.firestore.collection('tokens');
   }
 
-  async save(email: string, { profile, tokens }: Data) {
-    await this.collection.doc(email).set(
+  async save(userId: string, { profile, tokens }: Data) {
+    await this.collection.doc(userId).set(
       { profile, tokens },
       {
         merge: true,
@@ -22,11 +22,15 @@ export default class TokenRepository {
     );
   }
 
-  async get(email: string): Promise<Data | undefined> {
-    const dbToken = await this.collection.doc(email).get();
+  async get(userId: string): Promise<Data | undefined> {
+    const dbToken = await this.collection.doc(userId).get();
     const data = dbToken.data();
 
     return data as Data;
+  }
+
+  async remove(userId: string) {
+    await this.collection.doc(userId).delete();
   }
 }
 

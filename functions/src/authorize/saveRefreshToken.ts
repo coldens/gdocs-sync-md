@@ -6,30 +6,41 @@ import TokenRepository from '../repositories/TokenRepository';
 const repository = new TokenRepository();
 
 /**
- * Generates an authorized url for the given code and state, not confused with the
- * login url, this url is used to generate the tokens and save them in firestore
- * to be used later to make requests to the Google APIs
+ * Saves the refresh token and the user's profile in firestore.
  */
-export async function generateAuthorizedUrl(code: string, state: string) {
+export async function saveRefreshToken(
+  code: string,
+  state: string,
+  retry = false,
+) {
   const oauth2Client = getOAuth2client();
+  const { userId } = JSON.parse(state);
+
+  // Get tokens from the authorization code
   const { tokens } = await oauth2Client.getToken(code);
   oauth2Client.setCredentials(tokens);
+
+  if (!tokens.refresh_token) {
+    await Promise.allSettled([
+      oauth2Client.revokeCredentials(),
+      repository.remove(userId),
+    ]);
+
+    if (retry === false) {
+      return saveRefreshToken(code, state, true);
+    } else {
+      throw new Error('Refresh Token Not Found.');
+    }
+  }
 
   const profile = await google.oauth2('v2').userinfo.get({
     auth: oauth2Client,
   });
 
-  const { email } = JSON.parse(state);
-
-  const url = new URL(process.env.FRONTEND_AUTH_URL!);
-
   try {
     // Save tokens and profile of the authorized user in firestore
-    await repository.save(email, { profile: profile.data, tokens });
+    await repository.save(userId, { profile: profile.data, tokens });
   } catch (error) {
     logger.error('Error saving tokens', error);
-    url.searchParams.set('error', 'Error saving tokens');
   }
-
-  return url.toString();
 }

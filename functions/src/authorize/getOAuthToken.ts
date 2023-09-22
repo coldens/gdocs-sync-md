@@ -7,8 +7,8 @@ const repository = new TokenRepository();
  * Returns an OAuth2 client with the given credentials to make requests to the
  * Google APIs
  */
-export async function getOAuthToken(email: string) {
-  const data = await repository.get(email);
+export async function getOAuthToken(userId: string) {
+  const data = await repository.get(userId);
 
   const oauth2Client = getOAuth2client();
 

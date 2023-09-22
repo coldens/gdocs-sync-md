@@ -12,8 +12,8 @@ const turndownService = new TurndownService();
 /**
  * Saves a Google Docs document as a markdown file in firestore
  */
-export async function saveDocument(email: string, documentId: string) {
-  const oauth2Client = await getOAuthToken(email);
+export async function saveDocument(userId: string, documentId: string) {
+  const oauth2Client = await getOAuthToken(userId);
 
   // To export a Google Doc as a markdown file, we need to use the Drive API to export the file as HTML
   const driveClient = drive({
@@ -40,7 +40,7 @@ export async function saveDocument(email: string, documentId: string) {
   ]);
 
   if (htmlDoc.data && doc.data) {
-    logger.info(`Saving document "${documentId}" for user "${email}"`);
+    logger.info(`Saving document "${documentId}" for user "${userId}"`);
     const html = htmlDoc.data as string;
 
     const document = {
@@ -53,7 +53,7 @@ export async function saveDocument(email: string, documentId: string) {
       htmlMarkdown: turndownService.turndown(html),
     };
 
-    await repository.save(email, document);
+    await repository.save(userId, document);
 
     return document;
   } else {
