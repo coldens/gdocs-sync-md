@@ -9,7 +9,12 @@ const fs = require('node:fs/promises');
  */
 async function install() {
   const { fetchVersion } = await import('gh-release-fetch');
-  await rimraf(path.resolve('./bin'));
+  await rimraf(path.resolve('./bin') + '/**/*', {
+    glob: {
+      ignore: ['.gitignore'],
+    },
+    preserveRoot: true,
+  });
   await fetchVersion({
     repository: 'jgm/pandoc',
     package: 'pandoc-3.1.8-linux-amd64.tar.gz',
