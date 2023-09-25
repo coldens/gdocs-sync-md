@@ -7,10 +7,9 @@
     "serve": "npm run build:watch | firebase emulators:start --only functions",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
-    "deploy": "npm run postinstall && firebase deploy --only functions",
+    "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
-    "dev": "npm run build:watch | firebase emulators:start --only functions,firestore",
-    "postinstall": "node ./install.cjs"
+    "dev": "npm run build:watch | firebase emulators:start --only functions,firestore"
   },
   "engines": {
     "node": "18"
@@ -21,7 +20,6 @@
     "@google-cloud/local-auth": "^3.0.0",
     "@googleapis/docs": "^2.0.5",
     "@googleapis/drive": "^8.3.1",
-    "docs-markdown": "^1.2.0",
     "dotenv": "^16.3.1",
     "firebase-admin": "^11.8.0",
     "firebase-functions": "^4.3.1",

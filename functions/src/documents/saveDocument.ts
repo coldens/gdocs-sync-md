@@ -2,10 +2,11 @@ import { docs } from '@googleapis/docs';
 import { drive } from '@googleapis/drive';
 import * as logger from 'firebase-functions/logger';
 import { getOAuthToken } from '../authorize/getOAuthToken';
-import { convertToMarkdown } from '../pandoc';
 import DocumentRepository from '../repositories/DocumentRepository';
+import TurndownService = require('turndown');
 
 const repository = new DocumentRepository();
+const turndownService = new TurndownService();
 
 /**
  * Saves a Google Docs document as a markdown file in firestore
@@ -25,7 +26,7 @@ export async function saveDocument(userId: string, documentId: string) {
     auth: oauth2Client,
   });
 
-  const [doc, file] = await Promise.all([
+  const [doc, html] = await Promise.all([
     // Get the document metadata
     docsClient.documents.get({
       documentId,
@@ -33,16 +34,18 @@ export async function saveDocument(userId: string, documentId: string) {
     // Get the document content
     driveClient.files.export({
       fileId: documentId,
-      mimeType: 'application/vnd.oasis.opendocument.text',
+      mimeType: 'text/html',
     }),
   ]);
 
-  if (doc.data && file.data) {
+  if (doc.data && html.data) {
     logger.info(`Saving document "${documentId}" for user "${userId}"`);
+
+    const markdown = turndownService.turndown(html.data as string);
 
     const document = {
       id: documentId,
-      markdown: await convertToMarkdown(file.data as Blob),
+      markdown: markdown,
       title: doc.data.title || 'Document without title',
     };
 
