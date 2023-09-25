@@ -1,6 +1,13 @@
 import { spawn } from 'child_process';
 import path = require('node:path');
 
+/**
+ * Receives a blob of a ODT file and returns a promise with the markdown content, or rejects with an error.
+ * The markdown content is generated using pandoc.
+ *
+ * @param {Blob} content Blob of the ODT file
+ * @return {Promise<string>} The markdown content
+ */
 export function convertToMarkdown(content: Blob): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     const pandocPath = path.resolve('./bin/pandoc'); // Pandoc's path
