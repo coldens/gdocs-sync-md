@@ -1,12 +1,12 @@
 import { spawn } from 'child_process';
 import path = require('node:path');
 
-export function convertToMarkdown(content: string): Promise<string> {
+export function convertToMarkdown(content: Blob): Promise<string> {
   return new Promise<string>((resolve, reject) => {
-    const pandocPath = path.resolve('./pandoc'); // Pandoc's path
+    const pandocPath = path.resolve('./bin/pandoc'); // Pandoc's path
 
     // Run as a secondary process
-    const pandocProcess = spawn(pandocPath, ['--from=rtf', '--to=markdown'], {
+    const pandocProcess = spawn(pandocPath, ['--from=odt', '--to=markdown'], {
       stdio: ['pipe', 'pipe', 'inherit'],
     });
 
@@ -32,7 +32,17 @@ export function convertToMarkdown(content: string): Promise<string> {
       }
     });
 
-    pandocProcess.stdin.write(content);
-    pandocProcess.stdin.end();
+    content
+      .arrayBuffer()
+      .then((buffer) => {
+        pandocProcess.stdin.write(Buffer.from(buffer));
+      })
+      .catch((error) => {
+        reject(error);
+        pandocProcess.kill('SIGKILL');
+      })
+      .finally(() => {
+        pandocProcess.stdin.end();
+      });
   });
 }

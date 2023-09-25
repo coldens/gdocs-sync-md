@@ -33,16 +33,16 @@ export async function saveDocument(userId: string, documentId: string) {
     // Get the document content
     driveClient.files.export({
       fileId: documentId,
-      mimeType: 'application/rtf',
+      mimeType: 'application/vnd.oasis.opendocument.text',
     }),
   ]);
 
   if (doc.data && file.data) {
     logger.info(`Saving document "${documentId}" for user "${userId}"`);
-    const content = await (file.data as Blob).text();
+
     const document = {
       id: documentId,
-      markdown: await convertToMarkdown(content),
+      markdown: await convertToMarkdown(file.data as Blob),
       title: doc.data.title || 'Document without title',
     };
 
