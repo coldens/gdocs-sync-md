@@ -23,8 +23,11 @@ async function install() {
     extract: true,
   });
 
-  await fs.cp('./bin/linux/pandoc-3.1.8/bin/pandoc', './bin/pandoc');
-  await fs.chmod('./bin/pandoc', 0o755);
+  await fs.cp(
+    path.resolve('./bin/linux/pandoc-3.1.8/bin/pandoc'),
+    path.resolve('./bin/pandoc'),
+  );
+  await fs.chmod(path.resolve('./bin/pandoc'), 0o755);
   await rimraf(path.resolve('./bin/linux'));
 }
 
