@@ -33,6 +33,10 @@ export default class DocumentRepository {
     return document.data() as Document;
   }
 
+  async delete(userId: string, id: string) {
+    await this.collection.doc(userId).collection('documents').doc(id).delete();
+  }
+
   async getAll(userId: string): Promise<DocIdTitle[]> {
     const documents = await this.collection
       .doc(userId)
