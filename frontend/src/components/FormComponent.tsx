@@ -3,7 +3,7 @@ import {
   getFunctions,
   httpsCallable,
 } from 'firebase/functions';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { eventBus } from '../eventBus';
 
 export default function FormComponent({ defaultDocumentId = '' }) {
@@ -24,6 +24,7 @@ export default function FormComponent({ defaultDocumentId = '' }) {
   }
 
   const upload = httpsCallable(functions, 'upload');
+  const download = httpsCallable(functions, 'download');
 
   /**
    * Upload the document from google docs to firebase storage
@@ -47,6 +48,34 @@ export default function FormComponent({ defaultDocumentId = '' }) {
         eventBus.emit('refresh-docs');
       });
   };
+
+  const onDownload: React.MouseEventHandler = (event) => {
+    event.preventDefault();
+    setUploading(true);
+
+    download({ documentId })
+      .then((result) => {
+        const data: any = result.data;
+
+        if (data.success) {
+          const markdown = data.document.markdown;
+          const title = data.document.title;
+
+          // download the markdown
+          const element = document.createElement('a');
+          const file = new Blob([markdown], {
+            type: 'text/markdown',
+          });
+          element.href = URL.createObjectURL(file);
+          element.download = `${title}.md`;
+          element.click();
+        }
+      })
+      .finally(() => {
+        setUploading(false);
+      });
+  };
+
   return (
     <form
       className="row row-cols-lg-auto align-items-center"
@@ -80,6 +109,17 @@ export default function FormComponent({ defaultDocumentId = '' }) {
           {defaultDocumentId !== '' ? 'Reload' : 'Import'}
         </button>
       </div>
+      {defaultDocumentId !== '' && (
+        <div className="col-12">
+          <button
+            type="submit"
+            className="btn btn-secondary"
+            onClick={onDownload}
+          >
+            Download
+          </button>
+        </div>
+      )}
     </form>
   );
 }
