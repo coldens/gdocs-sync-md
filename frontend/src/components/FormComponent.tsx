@@ -6,7 +6,10 @@ import {
 import React, { useState } from 'react';
 import { eventBus } from '../eventBus';
 
-export default function FormComponent({ defaultDocumentId = '' }) {
+export default function FormComponent({
+  defaultDocumentId = '',
+  documentTitle = '',
+}) {
   const [uploading, setUploading] = useState(false);
   const [documentId, setDocumentId] = useState(defaultDocumentId);
 
@@ -76,24 +79,28 @@ export default function FormComponent({ defaultDocumentId = '' }) {
       });
   };
 
+  const inputId = 'input-' + defaultDocumentId;
+
   return (
     <form
       className="row row-cols-lg-auto align-items-center"
       onSubmit={onSubmit}
     >
       <div className="col-12 col-lg-6">
-        <label
-          className="visually-hidden"
-          htmlFor="inlineFormInputGroupDocumentId"
-        >
-          DocumentId
-        </label>
         <div className="input-group">
+          {documentTitle && (
+            <label
+              htmlFor={inputId}
+              className="col-sm-2 col-12 col-form-label col-form-label-sm"
+            >
+              {documentTitle}
+            </label>
+          )}
           <div className="input-group-text">id</div>
           <input
             type="text"
             className="form-control"
-            id="inlineFormInputGroupDocumentId"
+            id={inputId}
             placeholder="DocumentId"
             value={documentId}
             onChange={onChange}
@@ -104,22 +111,21 @@ export default function FormComponent({ defaultDocumentId = '' }) {
         </div>
       </div>
 
-      <div className="col-12">
+      <div className="col-12 mt-lg-0 mt-2 d-inline-flex align-items-center">
         <button type="submit" className="btn btn-primary" disabled={uploading}>
           {defaultDocumentId !== '' ? 'Reload' : 'Import'}
         </button>
-      </div>
-      {defaultDocumentId !== '' && (
-        <div className="col-12">
+
+        {defaultDocumentId !== '' && (
           <button
             type="submit"
-            className="btn btn-secondary"
+            className="btn btn-secondary ms-2"
             onClick={onDownload}
           >
             Download
           </button>
-        </div>
-      )}
+        )}
+      </div>
     </form>
   );
 }

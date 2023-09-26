@@ -1,13 +1,19 @@
 import { createContext } from 'react';
 
 export const docsContext = createContext<DocsContext>({
-  documentIds: [],
+  documents: [],
   isAuthorized: false,
   isLoading: true,
 });
 
 export type DocsContext = {
-  documentIds: string[];
+  documents: Document[];
   isAuthorized: boolean;
   isLoading: boolean;
+};
+
+export type Document = {
+  id: string;
+  title: string;
+  markdown?: string;
 };

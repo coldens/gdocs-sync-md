@@ -33,18 +33,24 @@ export default class DocumentRepository {
     return document.data() as Document;
   }
 
-  async getAllIds(userId: string): Promise<string[]> {
+  async getAll(userId: string): Promise<DocIdTitle[]> {
     const documents = await this.collection
       .doc(userId)
       .collection('documents')
-      .select('id')
+      .select('id', 'title')
       .get();
 
-    return documents.docs.map((doc) => doc.data().id);
+    return documents.docs.map((doc) => ({
+      id: doc.data().id,
+      title: doc.data().title,
+    }));
   }
 }
 
 type Document = {
   id: string;
+  title: string;
   markdown: string;
 };
+
+type DocIdTitle = Omit<Document, 'markdown'>;

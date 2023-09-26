@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { docsContext } from '../contexts/docsContext';
+import { Document, docsContext } from '../contexts/docsContext';
 import {
   connectFunctionsEmulator,
   getFunctions,
@@ -13,7 +13,7 @@ export default function DocsProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [documentIds, setDocumentIds] = useState<string[]>([]);
+  const [documents, setDocuments] = useState<Document[]>([]);
   const [isAuthorized, setIsAuthorized] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const { isLogged } = useAuth();
@@ -31,7 +31,7 @@ export default function DocsProvider({
 
         load()
           .then((result) => {
-            setDocumentIds(result.data as string[]);
+            setDocuments(result.data as Document[]);
             setIsAuthorized(true);
           })
           .catch((error) => {
@@ -57,7 +57,7 @@ export default function DocsProvider({
   }, [isLogged]);
 
   return (
-    <docsContext.Provider value={{ documentIds, isAuthorized, isLoading }}>
+    <docsContext.Provider value={{ documents, isAuthorized, isLoading }}>
       {children}
     </docsContext.Provider>
   );

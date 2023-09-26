@@ -9,11 +9,12 @@ initializeApp();
 import { generateAuthUrl } from './authorize/generateAuthUrl';
 import { isAuthorized } from './authorize/isAuthorized';
 import { saveRefreshToken } from './authorize/saveRefreshToken';
-import { getDocumentIds } from './documents/getDocumentIds';
+import { getDocuments } from './documents/getDocumentIds';
 import { saveDocument } from './documents/saveDocument';
 import { authHandlerSchema } from './schemas/authHandlerSchema';
 import { authSchema } from './schemas/authSchema';
 import { uploadSchema } from './schemas/uploadSchema';
+import { getDocument } from './documents/getDocument';
 
 /**
  * Uploads a Google Doc to Firestore, converting it to Markdown.
@@ -61,12 +62,38 @@ export const load = onCall(async (request) => {
       throw new Error('Unauthorized');
     }
 
-    const result = await getDocumentIds(userId);
+    const result = await getDocuments(userId);
 
     return result;
   } catch (err) {
     logger.error('Error loading document', err);
     throw err;
+  }
+});
+
+/**
+ * Returns a download url for a given document id.
+ */
+export const download = onCall(async (request) => {
+  try {
+    if (!request.auth) {
+      throw new Error('You must be logged in to load documents');
+    }
+
+    const userId = request.auth.uid;
+    const authorized = await isAuthorized(userId);
+
+    if (!authorized) {
+      throw new Error('Unauthorized');
+    }
+
+    const document = await getDocument(userId, request.data.documentId);
+
+    return { document, success: true };
+  } catch (err) {
+    logger.error('Error loading document', err);
+
+    return { success: false };
   }
 });
 
