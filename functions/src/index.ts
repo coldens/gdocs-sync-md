@@ -1,10 +1,11 @@
 import { initializeApp } from 'firebase-admin/app';
 import * as logger from 'firebase-functions/logger';
 import { onCall, onRequest } from 'firebase-functions/v2/https';
-import {
-  onDocumentCreated,
-  onDocumentDeleted,
-} from 'firebase-functions/v2/firestore';
+// import {
+//   onDocumentCreated,
+//   onDocumentDeleted,
+// } from 'firebase-functions/v2/firestore';
+import { pubsub } from 'firebase-functions/v1';
 
 // Initialize Firebase Admin before importing anything else because it
 // allows us to use the Firebase Admin SDK in the imported files.
@@ -21,8 +22,9 @@ import { uploadSchema } from './schemas/uploadSchema';
 import { getDocument } from './documents/getDocument';
 import { deleteDocument } from './documents/deleteDocument';
 import { updateWebHookSchema } from './schemas/updateWebHookSchema';
-import { startWebhook } from './webhook/startWebhook';
-import { stopWebhook } from './webhook/stopWebhook';
+// import { startWebhook } from './webhook/startWebhook';
+// import { stopWebhook } from './webhook/stopWebhook';
+import { syncDocuments } from './documents/syncDocuments';
 
 /**
  * Uploads a Google Doc to Firestore, converting it to Markdown.
@@ -185,41 +187,48 @@ export const documentWebHook = onRequest(async (req, res) => {
   }
 });
 
-/**
- * Creates a webhook for a document when it is created.
- */
-export const startWebhookOnCreated = onDocumentCreated(
-  {
-    document: 'users/{userId}/documents/{documentId}',
-    retry: true,
-  },
-  async (event) => {
-    const result = await startWebhook(event.params);
+export const refreshDocs = pubsub.schedule('every 1 hours').onRun(async () => {
+  logger.info('Refreshing docs');
+  await syncDocuments();
+  logger.info('Finished refreshing docs');
+});
 
-    if (result) {
-      await event.data?.ref.update({
-        webhookExpiration: result.expiration,
-      });
-    }
-  },
-);
-
-/**
- * Deletes a webhook for a document when it is deleted.
- */
-export const stopWebhookOnDeleted = onDocumentDeleted(
-  {
-    document: 'users/{userId}/documents/{documentId}',
-    retry: true,
-  },
-  async (event) => {
-    await stopWebhook(event.params);
-  },
-);
-
+// USING FIRESTORE TRIGGERS
 // TODO: Implement refreshWebhooks
 // export const refreshWebhooks = pubsub
 //   .schedule('every 1 hours')
 //   .onRun(async () => {
 //     logger.info('Refreshing webhooks');
 //   });
+
+// /**
+//  * Creates a webhook for a document when it is created.
+//  */
+// export const startWebhookOnCreated = onDocumentCreated(
+//   {
+//     document: 'documents/{userId}/documents/{documentId}',
+//     retry: true,
+//   },
+//   async (event) => {
+//     const result = await startWebhook(event.params);
+
+//     if (result) {
+//       await event.data?.ref.update({
+//         webhookExpiration: result.expiration,
+//       });
+//     }
+//   },
+// );
+
+// /**
+//  * Deletes a webhook for a document when it is deleted.
+//  */
+// export const stopWebhookOnDeleted = onDocumentDeleted(
+//   {
+//     document: 'documents/{userId}/documents/{documentId}',
+//     retry: true,
+//   },
+//   async (event) => {
+//     await stopWebhook(event.params);
+//   },
+// );

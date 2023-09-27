@@ -29,29 +29,39 @@ export default class TokenRepository {
     return data as Data;
   }
 
+  async getProfiles(): Promise<Profile[]> {
+    const dbTokens = await this.collection.select('profile').get();
+    const profiles = dbTokens.docs.map((doc) => doc.data().profile);
+    return profiles;
+  }
+
   async remove(userId: string) {
     await this.collection.doc(userId).delete();
   }
 }
 
+type Profile = {
+  email?: string | null;
+  family_name?: string | null;
+  given_name?: string | null;
+  hd?: string | null;
+  id?: string | null;
+  locale?: string | null;
+  name?: string | null;
+  picture?: string | null;
+  verified_email?: boolean | null;
+};
+
+type Token = {
+  refresh_token?: string | null;
+  expiry_date?: number | null;
+  access_token?: string | null;
+  token_type?: string | null;
+  id_token?: string | null;
+  scope?: string;
+};
+
 type Data = {
-  profile: {
-    email?: string | null;
-    family_name?: string | null;
-    given_name?: string | null;
-    hd?: string | null;
-    id?: string | null;
-    locale?: string | null;
-    name?: string | null;
-    picture?: string | null;
-    verified_email?: boolean | null;
-  };
-  tokens: {
-    refresh_token?: string | null;
-    expiry_date?: number | null;
-    access_token?: string | null;
-    token_type?: string | null;
-    id_token?: string | null;
-    scope?: string;
-  };
+  profile: Profile;
+  tokens: Token;
 };

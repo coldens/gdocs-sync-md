@@ -18,16 +18,23 @@ export async function startWebhook({
       fileId: documentId,
       requestBody: {
         id: documentId,
+        resourceId: documentId,
         type: 'web_hook',
-        address: process.env.WEBHOOK_URL,
+        address: process.env.GDRIVE_WEBHOOK_URL,
         token: Buffer.from(userId, 'utf-8').toString('base64'),
       },
     });
 
-    logger.info(`Started webhook for document "${documentId}"`);
+    logger.info(`Started webhook for document "${documentId}"`, result.data);
 
     return result.data;
   } catch (error) {
-    logger.error('Error starting webhook', error);
+    const text: string = error.toString();
+
+    if (text.includes(`Channel id ${documentId} not unique`)) {
+      logger.warn(`Webhook already exists for document "${documentId}"`, error);
+    } else {
+      logger.error('Error starting webhook', error);
+    }
   }
 }

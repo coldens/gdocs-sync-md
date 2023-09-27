@@ -9,7 +9,7 @@
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
-    "dev": "npm run build:watch | firebase emulators:start --only functions,firestore"
+    "dev": "npm run build:watch | firebase emulators:start --only functions,firestore,pubsub"
   },
   "engines": {
     "node": "18"
@@ -23,7 +23,6 @@
     "dotenv": "^16.3.1",
     "firebase-admin": "^11.8.0",
     "firebase-functions": "^4.3.1",
-    "gh-release-fetch": "^4.0.3",
     "googleapis": "^126.0.1",
     "rimraf": "^5.0.1",
     "turndown": "^7.1.2",

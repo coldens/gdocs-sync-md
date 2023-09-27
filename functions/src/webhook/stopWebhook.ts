@@ -23,6 +23,12 @@ export async function stopWebhook({
 
     logger.info(`Stopped webhook for document "${documentId}"`);
   } catch (error) {
-    logger.error('Error stopping webhook', error);
+    const text: string = error.toString();
+
+    if (text.includes(`Channel '${documentId}' not found for project`)) {
+      logger.warn(`Webhook does not exist for document "${documentId}"`, error);
+    } else {
+      logger.error('Error stopping webhook', error);
+    }
   }
 }
