@@ -6,7 +6,9 @@ import { WebHookParams } from './WebHookParams';
 export async function stopWebhook({
   userId,
   documentId,
-}: WebHookParams): Promise<void> {
+  id,
+  resourceId,
+}: Required<WebHookParams>): Promise<void> {
   try {
     const oauth2Client = await getOAuthToken(userId);
     const driveClient = drive({
@@ -16,12 +18,15 @@ export async function stopWebhook({
 
     await driveClient.channels.stop({
       requestBody: {
-        id: documentId,
-        resourceId: documentId,
+        id,
+        resourceId,
       },
     });
 
-    logger.info(`Stopped webhook for document "${documentId}"`);
+    logger.info(`Stopped webhook for document "${documentId}"`, {
+      id,
+      resourceId,
+    });
   } catch (error) {
     const text: string = error.toString();
 

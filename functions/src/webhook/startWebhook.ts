@@ -6,6 +6,7 @@ import { WebHookParams } from './WebHookParams';
 export async function startWebhook({
   userId,
   documentId,
+  id,
 }: WebHookParams): Promise<drive_v3.Schema$Channel | void> {
   try {
     const oauth2Client = await getOAuthToken(userId);
@@ -14,14 +15,23 @@ export async function startWebhook({
       auth: oauth2Client,
     });
 
+    const token = {
+      userId,
+      documentId,
+    };
+
+    const date = new Date();
+    // Set expiration to 7 days from now
+    date.setUTCDate(date.getUTCDate() + 7);
+
     const result = await driveClient.files.watch({
       fileId: documentId,
       requestBody: {
-        id: documentId,
-        resourceId: documentId,
+        id,
         type: 'web_hook',
         address: process.env.GDRIVE_WEBHOOK_URL,
-        token: Buffer.from(userId, 'utf-8').toString('base64'),
+        token: Buffer.from(JSON.stringify(token), 'utf-8').toString('base64'),
+        expiration: `${date.getTime()}`,
       },
     });
 

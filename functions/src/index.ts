@@ -1,11 +1,11 @@
 import { initializeApp } from 'firebase-admin/app';
 import * as logger from 'firebase-functions/logger';
 import { onCall, onRequest } from 'firebase-functions/v2/https';
-// import {
-//   onDocumentCreated,
-//   onDocumentDeleted,
-// } from 'firebase-functions/v2/firestore';
-import { pubsub } from 'firebase-functions/v1';
+import {
+  onDocumentCreated,
+  onDocumentDeleted,
+} from 'firebase-functions/v2/firestore';
+import crypto = require('node:crypto');
 
 // Initialize Firebase Admin before importing anything else because it
 // allows us to use the Firebase Admin SDK in the imported files.
@@ -22,9 +22,9 @@ import { uploadSchema } from './schemas/uploadSchema';
 import { getDocument } from './documents/getDocument';
 import { deleteDocument } from './documents/deleteDocument';
 import { updateWebHookSchema } from './schemas/updateWebHookSchema';
-// import { startWebhook } from './webhook/startWebhook';
-// import { stopWebhook } from './webhook/stopWebhook';
-import { syncDocuments } from './documents/syncDocuments';
+import { startWebhook } from './webhook/startWebhook';
+import { stopWebhook } from './webhook/stopWebhook';
+import { Document } from './repositories/DocumentRepository';
 
 /**
  * Uploads a Google Doc to Firestore, converting it to Markdown.
@@ -163,14 +163,14 @@ export const documentWebHook = onRequest(async (req, res) => {
   try {
     await updateWebHookSchema.validate(req.headers);
 
-    const state = req.header('X-Goog-Resource-State')!;
-    const documentId = req.header('X-Goog-Resource-ID')!;
-    const token = req.header('X-Goog-Channel-Token')!;
-
-    const userId = Buffer.from(token, 'base64').toString('utf-8');
+    const state = req.header('x-goog-resource-state')!;
+    const tokenStr = req.header('x-goog-channel-token')!;
+    const { documentId, userId } = JSON.parse(
+      Buffer.from(tokenStr, 'base64').toString('utf-8'),
+    );
 
     logger.info(
-      `Received webhook for document "${documentId}" for user "${userId}" with state "${state}"`,
+      `Received webhook for document "${documentId}" for user "${userId}"`,
     );
 
     if (state === 'delete') {
@@ -179,56 +179,70 @@ export const documentWebHook = onRequest(async (req, res) => {
     if (state === 'update') {
       await saveDocument(userId, documentId);
     }
+    if (state === 'sync') {
+      await saveDocument(userId, documentId);
+    }
 
     res.status(200).send();
   } catch (error) {
-    logger.error('Error watching document', error);
+    logger.error('Error watching document', error, req.headers);
     res.status(500).send('Error watching document');
   }
 });
 
-export const refreshDocs = pubsub.schedule('every 1 hours').onRun(async () => {
-  logger.info('Refreshing docs');
-  await syncDocuments();
-  logger.info('Finished refreshing docs');
-});
+/**
+ * Creates a webhook for a document when it is created.
+ */
+export const startWebhookOnCreated = onDocumentCreated(
+  {
+    document: 'documents/{userId}/documents/{documentId}',
+    // retry: true,
+  },
+  async (event) => {
+    const id = crypto.randomUUID();
+    const result = await startWebhook({ ...event.params, id });
 
+    if (result) {
+      await event.data?.ref.update({
+        webhook: {
+          id: result.id,
+          resourceId: result.resourceId,
+          expiration: result.expiration,
+        },
+      });
+
+      logger.info('Webhook created for document', result);
+    } else {
+      logger.info('Webhook already exists for document');
+    }
+  },
+);
+
+/**
+ * Deletes a webhook for a document when it is deleted.
+ */
+export const stopWebhookOnDeleted = onDocumentDeleted(
+  {
+    document: 'documents/{userId}/documents/{documentId}',
+    // retry: true,
+  },
+  async (event) => {
+    const doc = event.data?.data() as Document;
+
+    if (doc?.webhook) {
+      await stopWebhook({
+        ...event.params,
+        resourceId: doc.webhook.resourceId,
+        id: doc.webhook.id,
+      });
+    }
+  },
+);
+
+// TODO: Refresh webhooks
 // USING FIRESTORE TRIGGERS
-// TODO: Implement refreshWebhooks
 // export const refreshWebhooks = pubsub
 //   .schedule('every 1 hours')
 //   .onRun(async () => {
 //     logger.info('Refreshing webhooks');
 //   });
-
-// /**
-//  * Creates a webhook for a document when it is created.
-//  */
-// export const startWebhookOnCreated = onDocumentCreated(
-//   {
-//     document: 'documents/{userId}/documents/{documentId}',
-//     retry: true,
-//   },
-//   async (event) => {
-//     const result = await startWebhook(event.params);
-
-//     if (result) {
-//       await event.data?.ref.update({
-//         webhookExpiration: result.expiration,
-//       });
-//     }
-//   },
-// );
-
-// /**
-//  * Deletes a webhook for a document when it is deleted.
-//  */
-// export const stopWebhookOnDeleted = onDocumentDeleted(
-//   {
-//     document: 'documents/{userId}/documents/{documentId}',
-//     retry: true,
-//   },
-//   async (event) => {
-//     await stopWebhook(event.params);
-//   },
-// );

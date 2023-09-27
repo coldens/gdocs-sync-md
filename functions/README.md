@@ -38,6 +38,10 @@ The project uses environment variables to store sensitive information. To set th
 
 Before deploying the project, create a `.env` file based on the `.env.example` file and fill in the values for the production environment.
 
+## Google Drive Watch WebHook
+
+To set up the `GDRIVE_WEBHOOK_URL` variable, you need to use a tunneling service like [ngrok](https://ngrok.com/) or [cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/), as Google requires the webhook URL to be publicly accessible.
+
 
 ## API
 
@@ -111,3 +115,7 @@ Redirects to the frontend confirming the authorization.
 #### Errors
 
 - `400 Bad Request`: If the query parameters are invalid.
+
+### onRequest `GET /documentWebHook`
+
+To be called by Google when a document is updated.

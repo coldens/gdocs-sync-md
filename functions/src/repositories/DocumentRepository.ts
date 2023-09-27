@@ -51,10 +51,16 @@ export default class DocumentRepository {
   }
 }
 
-type Document = {
+export interface Document {
   id: string;
   title: string;
   markdown: string;
-};
+
+  webhook?: {
+    expiration: string;
+    id: string;
+    resourceId: string;
+  };
+}
 
 type DocIdTitle = Omit<Document, 'markdown'>;
