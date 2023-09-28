@@ -1,5 +1,5 @@
 import TokenRepository from '../repositories/TokenRepository';
-import { getDocuments } from './getDocumentIds';
+import { getDocuments } from './getDocuments';
 import { saveDocument } from './saveDocument';
 
 /**

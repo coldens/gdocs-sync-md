@@ -1,4 +1,4 @@
-import { getFirestore } from 'firebase-admin/firestore';
+import { Filter, getFirestore } from 'firebase-admin/firestore';
 
 /**
  * Repository to save and get documents from firestore
@@ -13,7 +13,7 @@ export default class DocumentRepository {
     this.collection = this.firestore.collection('documents');
   }
 
-  async save(userId: string, data: Document) {
+  async save(userId: string, data: DocumentSave) {
     await this.collection
       .doc(userId)
       .collection('documents')
@@ -37,7 +37,7 @@ export default class DocumentRepository {
     await this.collection.doc(userId).collection('documents').doc(id).delete();
   }
 
-  async getAll(userId: string): Promise<DocIdTitle[]> {
+  async getMany(userId: string): Promise<DocIdTitle[]> {
     const documents = await this.collection
       .doc(userId)
       .collection('documents')
@@ -49,6 +49,26 @@ export default class DocumentRepository {
       title: doc.data().title,
     }));
   }
+
+  async getEmptyWebhooks(userId: string): Promise<Document[]> {
+    const date = new Date();
+    const documents = await this.collection
+      .doc(userId)
+      .collection('documents')
+      .where(
+        Filter.or(
+          Filter.where('webhook', '==', undefined),
+          Filter.where('webhook.expiration', '<', date.getTime()),
+        ),
+      )
+      .get();
+
+    return documents.docs.map((doc) => doc.data() as Document);
+  }
+}
+
+export interface DocumentSave extends Partial<Document> {
+  id: string;
 }
 
 export interface Document {
@@ -57,7 +77,7 @@ export interface Document {
   markdown: string;
 
   webhook?: {
-    expiration: string;
+    expiration: number;
     id: string;
     resourceId: string;
   };

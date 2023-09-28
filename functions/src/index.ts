@@ -1,11 +1,6 @@
 import { initializeApp } from 'firebase-admin/app';
 import * as logger from 'firebase-functions/logger';
 import { onCall, onRequest } from 'firebase-functions/v2/https';
-import {
-  onDocumentCreated,
-  onDocumentDeleted,
-} from 'firebase-functions/v2/firestore';
-import crypto = require('node:crypto');
 
 // Initialize Firebase Admin before importing anything else because it
 // allows us to use the Firebase Admin SDK in the imported files.
@@ -14,7 +9,7 @@ initializeApp();
 import { generateAuthUrl } from './authorize/generateAuthUrl';
 import { isAuthorized } from './authorize/isAuthorized';
 import { saveRefreshToken } from './authorize/saveRefreshToken';
-import { getDocuments } from './documents/getDocumentIds';
+import { getDocuments } from './documents/getDocuments';
 import { saveDocument } from './documents/saveDocument';
 import { authHandlerSchema } from './schemas/authHandlerSchema';
 import { authSchema } from './schemas/authSchema';
@@ -22,9 +17,8 @@ import { uploadSchema } from './schemas/uploadSchema';
 import { getDocument } from './documents/getDocument';
 import { deleteDocument } from './documents/deleteDocument';
 import { updateWebHookSchema } from './schemas/updateWebHookSchema';
-import { startWebhook } from './webhook/startWebhook';
-import { stopWebhook } from './webhook/stopWebhook';
-import { Document } from './repositories/DocumentRepository';
+import { pubsub } from 'firebase-functions/v1';
+import { batchStartWebhook } from './webhook/batchStartWebhook';
 
 /**
  * Uploads a Google Doc to Firestore, converting it to Markdown.
@@ -191,58 +185,23 @@ export const documentWebHook = onRequest(async (req, res) => {
 });
 
 /**
- * Creates a webhook for a document when it is created.
+ * Refreshes webhooks for all documents.
  */
-export const startWebhookOnCreated = onDocumentCreated(
-  {
-    document: 'documents/{userId}/documents/{documentId}',
-    // retry: true,
-  },
-  async (event) => {
-    const id = crypto.randomUUID();
-    const result = await startWebhook({ ...event.params, id });
+export const refreshWebhooks = pubsub
+  .schedule('every 1 hours')
+  .onRun(async () => {
+    logger.info('Refreshing webhooks');
 
-    if (result) {
-      await event.data?.ref.update({
-        webhook: {
-          id: result.id,
-          resourceId: result.resourceId,
-          expiration: result.expiration,
-        },
-      });
+    try {
+      const batch = await batchStartWebhook();
+      const errors = batch.filter((result) => result.status === 'rejected');
 
-      logger.info('Webhook created for document', result);
-    } else {
-      logger.info('Webhook already exists for document');
+      if (errors.length) {
+        logger.error('Error refreshing webhooks', errors);
+      }
+    } catch (error) {
+      logger.error('Error refreshing webhooks', error);
     }
-  },
-);
 
-/**
- * Deletes a webhook for a document when it is deleted.
- */
-export const stopWebhookOnDeleted = onDocumentDeleted(
-  {
-    document: 'documents/{userId}/documents/{documentId}',
-    // retry: true,
-  },
-  async (event) => {
-    const doc = event.data?.data() as Document;
-
-    if (doc?.webhook) {
-      await stopWebhook({
-        ...event.params,
-        resourceId: doc.webhook.resourceId,
-        id: doc.webhook.id,
-      });
-    }
-  },
-);
-
-// TODO: Refresh webhooks
-// USING FIRESTORE TRIGGERS
-// export const refreshWebhooks = pubsub
-//   .schedule('every 1 hours')
-//   .onRun(async () => {
-//     logger.info('Refreshing webhooks');
-//   });
+    logger.info('Finished refreshing webhooks');
+  });
