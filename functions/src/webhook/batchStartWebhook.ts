@@ -13,10 +13,9 @@ export async function batchStartWebhook() {
   const profiles = await tokenRepository.getProfiles();
 
   return await Promise.allSettled(
-    profiles.flatMap(async (profile) => {
+    profiles.map(async (profile) => {
       const docs = await documentRepository.getMany(profile.id!);
-
-      return await Promise.allSettled(
+      await Promise.all(
         docs.map(async (doc) => {
           const uuid = crypto.randomUUID();
 
@@ -32,12 +31,10 @@ export async function batchStartWebhook() {
               webhook: {
                 id: result.id,
                 resourceId: result.resourceId!,
-                expiration: parseInt(result.expiration!),
+                expiration: result.expiration!,
               },
             });
           }
-
-          return result;
         }),
       );
     }),

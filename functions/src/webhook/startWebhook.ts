@@ -21,8 +21,8 @@ export async function startWebhook({
     };
 
     const date = new Date();
-    // Set expiration to 7 days from now
-    date.setUTCDate(date.getUTCDate() + 7);
+    // Set expiration to 1 day from now
+    date.setUTCDate(date.getUTCDate() + 1);
 
     const result = await driveClient.files.watch({
       fileId: documentId,

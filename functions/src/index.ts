@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase-admin/app';
 import * as logger from 'firebase-functions/logger';
 import { onCall, onRequest } from 'firebase-functions/v2/https';
+import { onSchedule } from 'firebase-functions/v2/scheduler';
 
 // Initialize Firebase Admin before importing anything else because it
 // allows us to use the Firebase Admin SDK in the imported files.
@@ -17,7 +18,6 @@ import { uploadSchema } from './schemas/uploadSchema';
 import { getDocument } from './documents/getDocument';
 import { deleteDocument } from './documents/deleteDocument';
 import { updateWebHookSchema } from './schemas/updateWebHookSchema';
-import { pubsub } from 'firebase-functions/v1';
 import { batchStartWebhook } from './webhook/batchStartWebhook';
 
 /**
@@ -187,9 +187,14 @@ export const documentWebHook = onRequest(async (req, res) => {
 /**
  * Refreshes webhooks for all documents.
  */
-export const refreshWebhooks = pubsub
-  .schedule('every 1 hours')
-  .onRun(async () => {
+export const refreshWebhooks = onSchedule(
+  {
+    schedule: 'every 1 hours',
+    timeZone: 'Etc/UTC',
+    maxInstances: 1,
+    retryCount: 2,
+  },
+  async () => {
     logger.info('Refreshing webhooks');
 
     try {
@@ -204,4 +209,5 @@ export const refreshWebhooks = pubsub
     }
 
     logger.info('Finished refreshing webhooks');
-  });
+  },
+);

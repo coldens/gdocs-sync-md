@@ -77,7 +77,7 @@ export interface Document {
   markdown: string;
 
   webhook?: {
-    expiration: number;
+    expiration: string;
     id: string;
     resourceId: string;
   };
