@@ -7,6 +7,9 @@ import TurndownService = require('turndown');
 
 const repository = new DocumentRepository();
 const turndownService = new TurndownService();
+turndownService.remove('head');
+turndownService.remove('style');
+turndownService.remove('script');
 
 /**
  * Saves a Google Docs document as a markdown file in firestore

@@ -14,19 +14,19 @@ export async function batchStartWebhook() {
 
   return await Promise.allSettled(
     profiles.map(async (profile) => {
-      const docs = await documentRepository.getMany(profile.id!);
+      const docs = await documentRepository.getMany(profile.uid!);
       await Promise.all(
         docs.map(async (doc) => {
           const uuid = crypto.randomUUID();
 
           const result = await startWebhook({
-            userId: profile.id!,
+            userId: profile.uid!,
             documentId: doc.id,
             id: uuid,
           });
 
           if (result?.id) {
-            await documentRepository.save(profile.id!, {
+            await documentRepository.save(profile.uid!, {
               id: doc.id,
               webhook: {
                 id: result.id,

@@ -31,7 +31,14 @@ export default class TokenRepository {
 
   async getProfiles(): Promise<Profile[]> {
     const dbTokens = await this.collection.select('profile').get();
-    const profiles = dbTokens.docs.map((doc) => doc.data().profile);
+
+    const profiles = dbTokens.docs.map((doc) => {
+      const uid = doc.id;
+      const profile = doc.data().profile as Profile;
+      profile.uid = uid;
+      return profile;
+    });
+
     return profiles;
   }
 
@@ -50,6 +57,7 @@ type Profile = {
   name?: string | null;
   picture?: string | null;
   verified_email?: boolean | null;
+  uid?: string;
 };
 
 type Token = {
